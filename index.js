@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 const multer = require('multer')
 
 const audiosFolder = path.join(__dirname, './audios/')
-const samplesFolder = path.join(__dirname, './samples')
+const samplesFolder = path.join(__dirname, './samples/')
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
