@@ -8,8 +8,8 @@ const port = 8080
 app.use(bodyParser.json());
 
 //support parsing of application/x-www-form-urlencoded post data
-app.use(bodyParser.urlencoded({ extended: true }));
-const multer  = require('multer')
+app.use(bodyParser.urlencoded({extended: true}));
+const multer = require('multer')
 
 const audiosFolder = path.join(__dirname, './audios/')
 
@@ -31,7 +31,7 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-const upload = multer({ storage: storage })
+const upload = multer({storage: storage})
 
 function randomString(length) {
   let result = '';
@@ -51,7 +51,7 @@ function removeFile(fileName) {
 
 function trimFromBeginning(src, length) {
   return new Promise(((resolve, reject) => {
-    const randomFileName =  audiosFolder + randomString(15) + '.mp3'
+    const randomFileName = audiosFolder + randomString(15) + '.mp3'
     const firsHalfReq = new ffmpeg({source: src});
     firsHalfReq.setStartTime(0) //Can be in "HH:MM:SS" format also
       .setDuration(length)
@@ -131,10 +131,11 @@ app.post('/cut_audio', upload.single('audio'), async (req, res, next) => {
     const [firstFile, secondFile] = await Promise.all([trimFromBeginning(src, req.body.left), trimFromEnd(src, req.body.right)])
     const fileName = await mergeFiles(firstFile, secondFile)
     console.log('Files successfully merge, result: ' + fileName)
-    res.status(200).send({fileName})
+    res.status(200).send({fileName: fileName.split('/').pop()})
   }
   catch (err) {
-    fs.unlink(req.file.path, () => {});
+    fs.unlink(req.file.path, () => {
+    });
     console.error(err)
     res.sendStatus(500)
   }
@@ -170,10 +171,11 @@ app.post('/fade_in', upload.single('audio'), async (req, res, next) => {
   const src = req.file.path
   try {
     const fileName = await fadeIn(src)
-    res.status(200).send({fileName})
+    res.status(200).send({fileName: fileName.split('/').pop()})
   }
   catch (err) {
-    fs.unlink(req.file.path, () => {});
+    fs.unlink(req.file.path, () => {
+    });
     console.error(err)
     res.sendStatus(500)
   }
@@ -182,7 +184,7 @@ app.post('/fade_in', upload.single('audio'), async (req, res, next) => {
 function fadeOut(fileName, endPoint) {
   const resultFile = audiosFolder + 'result' + randomString(15) + '.mp3'
   return new Promise(((resolve, reject) => {
-    ffmpeg(fileName).audioFilters('afade=t=out:st='+endPoint+':d=5')
+    ffmpeg(fileName).audioFilters('afade=t=out:st=' + endPoint + ':d=5')
       .on('error', function (err) {
         removeFile(resultFile)
         reject(err)
@@ -207,10 +209,11 @@ app.post('/fade_out', upload.single('audio'), async (req, res, next) => {
   const src = req.file.path
   try {
     const fileName = await fadeOut(src, req.body.endPoint)
-    res.status(200).send({fileName})
+    res.status(200).send({fileName: fileName.split('/').pop()})
   }
   catch (err) {
-    fs.unlink(req.file.path, () => {});
+    fs.unlink(req.file.path, () => {
+    });
     console.error(err)
     res.sendStatus(500)
   }
@@ -249,10 +252,11 @@ app.post('/add_music', upload.single('audio'), async (req, res, next) => {
       'rabbits': 'rabbits.mp3'
     }
     const fileName = await mixSounds(src, path.resolve(audiosFolder + musicName[req.body.music]))
-    res.status(200).send({fileName})
+    res.status(200).send({fileName: fileName.split('/').pop()})
   }
   catch (err) {
-    fs.unlink(req.file.path, () => {});
+    fs.unlink(req.file.path, () => {
+    });
     console.error(err)
     res.sendStatus(500)
   }
