@@ -1,7 +1,8 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const path = require("path");
 const app = express()
-const port = 3001
+const port = 8080
 
 // support parsing of application/json type post data
 app.use(bodyParser.json());
@@ -10,7 +11,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 const multer  = require('multer')
 
-const audiosFolder = './audios/'
+const audiosFolder = path.join(__dirname, './audios/')
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -23,9 +24,8 @@ const storage = multer.diskStorage({
 
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs')
-const path = require("path");
 
-app.use(express.static('./audios/')); /* this line tells Express to use the public folder as our static folder from which we can serve static files*/
+app.use(express.static(audiosFolder)); /* this line tells Express to use the public folder as our static folder from which we can serve static files*/
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
