@@ -1,7 +1,13 @@
 const express = require('express')
+const bodyParser = require('body-parser')
 const app = express()
 const port = 3001
 
+// support parsing of application/json type post data
+app.use(bodyParser.json());
+
+//support parsing of application/x-www-form-urlencoded post data
+app.use(bodyParser.urlencoded({ extended: true }));
 const multer  = require('multer')
 
 const audiosFolder = './audios/'
@@ -121,7 +127,7 @@ function mergeFiles(firstFile, secondFile) {
 app.post('/cut_audio', upload.single('audio'), async (req, res) => {
   const src = req.file.path
   try {
-    const [firstFile, secondFile] = await Promise.all([trimFromBeginning(src, 10), trimFromEnd(src, 130)])
+    const [firstFile, secondFile] = await Promise.all([trimFromBeginning(src, req.body.left), trimFromEnd(src, req.body.right)])
     const fileName = await mergeFiles(firstFile, secondFile)
     console.log('Files successfully merge, result: ' + fileName)
     res.status(200).sendFile(path.resolve(fileName), function (err) {
