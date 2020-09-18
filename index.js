@@ -114,6 +114,7 @@ function mergeFiles(firstFile, secondFile) {
       .on('end', function (err) {
         if (err) {
           removeFile(resultFile)
+          reject(err)
         }
         else {
           console.log('files have been merged succesfully');
@@ -124,7 +125,7 @@ function mergeFiles(firstFile, secondFile) {
   }))
 }
 
-app.post('/cut_audio', upload.single('audio'), async (req, res) => {
+app.post('/cut_audio', upload.single('audio'), async (req, res, next) => {
   const src = req.file.path
   try {
     const [firstFile, secondFile] = await Promise.all([trimFromBeginning(src, req.body.left), trimFromEnd(src, req.body.right)])
@@ -154,6 +155,108 @@ app.post('/cut_audio', upload.single('audio'), async (req, res) => {
   }
 
 })
+
+
+function fadeIn(fileName) {
+  const resultFile = audiosFolder + 'result' + randomString(15) + '.mp3'
+  return new Promise(((resolve, reject) => {
+    ffmpeg(fileName).audioFilters('afade=t=in:ss=0:d=10')
+      .on('error', function (err) {
+        removeFile(resultFile)
+        reject(err)
+      })
+      .on('end', function (err) {
+        if (err) {
+          removeFile(resultFile)
+          reject(err)
+        }
+        else {
+          console.log('files successfully fade in');
+          resolve(resultFile)
+        }
+      })
+      .saveToFile(resultFile)
+  }))
+
+}
+
+
+app.post('/fade_in', upload.single('audio'), async (req, res, next) => {
+  const src = req.file.path
+  try {
+    const fileName = await fadeIn(src)
+    res.status(200).sendFile(path.resolve(fileName), function (err) {
+      if (err) {
+        next(err);
+      }
+      else {
+        try {
+          fs.unlink(fileName, () => {});
+          fs.unlink(req.file.path, () => {});
+        }
+        catch (e) {
+          console.error(e)
+          console.log("error removing ");
+        }
+      }
+    })
+  }
+  catch (err) {
+    console.error(err)
+    res.sendStatus(500)
+  }
+})
+
+function fadeOut(fileName, endPoint) {
+  const resultFile = audiosFolder + 'result' + randomString(15) + '.mp3'
+  return new Promise(((resolve, reject) => {
+    ffmpeg(fileName).audioFilters('afade=t=out:st='+endPoint+':d=5')
+      .on('error', function (err) {
+        removeFile(resultFile)
+        reject(err)
+      })
+      .on('end', function (err) {
+        if (err) {
+          removeFile(resultFile)
+          reject(err)
+        }
+        else {
+          console.log('files successfully fade in');
+          resolve(resultFile)
+        }
+      })
+      .saveToFile(resultFile)
+  }))
+
+}
+
+
+app.post('/fade_out', upload.single('audio'), async (req, res, next) => {
+  const src = req.file.path
+  try {
+    const fileName = await fadeOut(src, req.body.endPoint)
+    res.status(200).sendFile(path.resolve(fileName), function (err) {
+      if (err) {
+        next(err);
+      }
+      else {
+        try {
+          fs.unlink(fileName, () => {});
+          fs.unlink(req.file.path, () => {});
+        }
+        catch (e) {
+          console.error(e)
+          console.log("error removing ");
+        }
+      }
+    })
+  }
+  catch (err) {
+    console.error(err)
+    res.sendStatus(500)
+  }
+})
+
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
