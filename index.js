@@ -44,8 +44,8 @@ function randomString(length) {
 }
 
 function removeFile(fileName) {
-  if (fs.existsSync(audiosFolder + fileName)) {
-    fs.unlinkSync(audiosFolder + fileName)
+  if (fs.existsSync(fileName)) {
+    fs.unlinkSync(fileName)
   }
 }
 
