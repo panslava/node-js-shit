@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = 3000
+const port = 3001
 
 const multer  = require('multer')
 
@@ -130,12 +130,14 @@ app.post('/cut_audio', upload.single('audio'), async (req, res) => {
       }
       else {
         try {
-          fs.unlink(fileName);
-          fs.unlink(firstFile);
-          fs.unlink(secondFile);
+          fs.unlink(fileName, () => {});
+          fs.unlink(firstFile, () => {});
+          fs.unlink(secondFile, () => {});
+          fs.unlink(req.file.path, () => {});
         }
         catch (e) {
-          console.log("error removing ", filename);
+          console.error(e)
+          console.log("error removing ", fileName);
         }
       }
     })
