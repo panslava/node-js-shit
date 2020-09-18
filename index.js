@@ -12,6 +12,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 const multer = require('multer')
 
 const audiosFolder = path.join(__dirname, './audios/')
+const samplesFolder = path.join(__dirname, './samples')
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -251,7 +252,7 @@ app.post('/add_music', upload.single('audio'), async (req, res, next) => {
       'laugh': 'laugh.mp3',
       'rabbits': 'rabbits.mp3'
     }
-    const fileName = await mixSounds(src, path.resolve(audiosFolder + musicName[req.body.music]))
+    const fileName = await mixSounds(src, path.resolve(samplesFolder + musicName[req.body.music]))
     res.status(200).send({fileName: fileName.split('/').pop()})
   }
   catch (err) {
