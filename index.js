@@ -133,9 +133,9 @@ app.post('/cut_audio', upload.single('audio'), async (req, res, next) => {
     const fileName = await mergeFiles(firstFile, secondFile)
     console.log('Files successfully merge, result: ' + fileName)
     res.status(200).send({fileName: fileName.split('/').pop()})
-    fs.unlink(firstFile)
-    fs.unlink(secondFile)
-    fs.unlink(src)
+    fs.unlink(firstFile, () => {})
+    fs.unlink(secondFile, () => {})
+    fs.unlink(src, () => {})
   }
   catch (err) {
     fs.unlink(req.file.path, () => {
@@ -176,7 +176,7 @@ app.post('/fade_in', upload.single('audio'), async (req, res, next) => {
   try {
     const fileName = await fadeIn(src)
     res.status(200).send({fileName: fileName.split('/').pop()})
-    fs.unlink(src)
+    fs.unlink(src, () => {})
   }
   catch (err) {
     fs.unlink(req.file.path, () => {
@@ -215,7 +215,7 @@ app.post('/fade_out', upload.single('audio'), async (req, res, next) => {
   try {
     const fileName = await fadeOut(src, req.body.endPoint)
     res.status(200).send({fileName: fileName.split('/').pop()})
-    fs.unlink(src)
+    fs.unlink(src, () => {})
   }
   catch (err) {
     fs.unlink(req.file.path, () => {
@@ -259,7 +259,7 @@ app.post('/add_music', upload.single('audio'), async (req, res, next) => {
     }
     const fileName = await mixSounds(src, path.resolve(samplesFolder + musicName[req.body.music]))
     res.status(200).send({fileName: fileName.split('/').pop()})
-    fs.unlink(src)
+    fs.unlink(src, () => {})
   }
   catch (err) {
     fs.unlink(req.file.path, () => {
