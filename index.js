@@ -150,6 +150,7 @@ app.post('/cut_audio', upload.single('audio'), async (req, res, next) => {
     })
   }
   catch (err) {
+    fs.unlink(req.file.path, () => {});
     console.error(err)
     res.sendStatus(500)
   }
@@ -202,6 +203,7 @@ app.post('/fade_in', upload.single('audio'), async (req, res, next) => {
     })
   }
   catch (err) {
+    fs.unlink(req.file.path, () => {});
     console.error(err)
     res.sendStatus(500)
   }
@@ -252,6 +254,63 @@ app.post('/fade_out', upload.single('audio'), async (req, res, next) => {
     })
   }
   catch (err) {
+    fs.unlink(req.file.path, () => {});
+    console.error(err)
+    res.sendStatus(500)
+  }
+})
+
+function mixSounds(firstPath, secondPath) {
+  const resultFile = audiosFolder + 'result' + randomString(15) + '.mp3'
+  return new Promise(((resolve, reject) => {
+    ffmpeg(firstPath).input(secondPath).complexFilter('amix=inputs=2:duration=longest')
+      .on('error', function (err) {
+        removeFile(resultFile)
+        reject(err)
+      })
+      .on('end', function (err) {
+        if (err) {
+          removeFile(resultFile)
+          reject(err)
+        }
+        else {
+          console.log('files successfully mixed');
+          resolve(resultFile)
+        }
+      })
+      .saveToFile(resultFile)
+  }))
+
+}
+
+app.post('/add_music', upload.single('audio'), async (req, res, next) => {
+  const src = req.file.path
+  try {
+    const musicName = {
+      'verka': 'music_fun.mp3',
+      'trombone': 'trombone.mp3',
+      'laugh': 'laugh.mp3',
+      'rabbits': 'rabbits.mp3'
+    }
+    const fileName = await mixSounds(src, path.resolve(audiosFolder + musicName[req.body.music]))
+    res.status(200).sendFile(path.resolve(fileName), function (err) {
+      if (err) {
+        next(err);
+      }
+      else {
+        try {
+          fs.unlink(fileName, () => {});
+          fs.unlink(req.file.path, () => {});
+        }
+        catch (e) {
+          console.error(e)
+          console.log("error removing");
+        }
+      }
+    })
+  }
+  catch (err) {
+    fs.unlink(req.file.path, () => {});
     console.error(err)
     res.sendStatus(500)
   }
