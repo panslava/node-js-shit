@@ -3,6 +3,9 @@ const bodyParser = require('body-parser')
 const path = require("path");
 const app = express()
 const port = 8080
+const cors = require('cors')
+
+app.use(cors({origin: true}))
 
 // support parsing of application/json type post data
 app.use(bodyParser.json());
