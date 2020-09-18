@@ -132,10 +132,16 @@ app.post('/cut_audio', upload.single('audio'), async (req, res, next) => {
     const [firstFile, secondFile] = await Promise.all([trimFromBeginning(src, req.body.left), trimFromEnd(src, req.body.right)])
     const fileName = await mergeFiles(firstFile, secondFile)
     console.log('Files successfully merge, result: ' + fileName)
-    res.status(200).send({fileName: fileName.split('/').pop()})
-    fs.unlink(firstFile, () => {})
-    fs.unlink(secondFile, () => {})
-    fs.unlink(src, () => {})
+    res.status(200).sendFile(fileName, () => {
+
+      fs.unlink(firstFile, () => {
+      })
+      fs.unlink(secondFile, () => {
+      })
+      fs.unlink(src, () => {
+      })
+      fs.unlink(fileName, () => {})
+    })
   }
   catch (err) {
     fs.unlink(req.file.path, () => {
@@ -175,8 +181,10 @@ app.post('/fade_in', upload.single('audio'), async (req, res, next) => {
   const src = req.file.path
   try {
     const fileName = await fadeIn(src)
-    res.status(200).send({fileName: fileName.split('/').pop()})
-    fs.unlink(src, () => {})
+    res.status(200).sendFile(fileName, () => {
+      fs.unlink(src, () => {})
+      fs.unlink(fileName, () => {})
+    })
   }
   catch (err) {
     fs.unlink(req.file.path, () => {
@@ -214,8 +222,10 @@ app.post('/fade_out', upload.single('audio'), async (req, res, next) => {
   const src = req.file.path
   try {
     const fileName = await fadeOut(src, req.body.endPoint)
-    res.status(200).send({fileName: fileName.split('/').pop()})
-    fs.unlink(src, () => {})
+    res.status(200).sendFile(fileName, () => {
+      fs.unlink(src, () => {})
+      fs.unlink(fileName, () => {})
+    })
   }
   catch (err) {
     fs.unlink(req.file.path, () => {
@@ -258,8 +268,11 @@ app.post('/add_music', upload.single('audio'), async (req, res, next) => {
       'rabbits': 'rabbits.mp3'
     }
     const fileName = await mixSounds(src, path.resolve(samplesFolder + musicName[req.body.music]))
-    res.status(200).send({fileName: fileName.split('/').pop()})
-    fs.unlink(src, () => {})
+    res.status(200).sendFile(fileName, () => {
+      fs.unlink(src, () => {
+      })
+      fs.unlink(fileName)
+    })
   }
   catch (err) {
     fs.unlink(req.file.path, () => {
